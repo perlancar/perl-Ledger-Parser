@@ -1,5 +1,14 @@
 Revision history for Ledger-Parser.
 
+0.06    2016-01-11 (VDANJEAN)
+
+        [INCOMPATIBLE CHANGES]
+
+        - Rewrite implementation based on Moose hierarchical objects
+        - Parser interface maintained
+        - Journal interface fully modified (and lots of new object introduced)
+        - Documentation: nearly nothing done :-(
+
 0.04    2015-03-26 (PERLANCAR)
 
         [INCOMPATIBLE CHANGES]

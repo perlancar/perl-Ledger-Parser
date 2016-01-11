@@ -1,39 +1,53 @@
 package Ledger::Journal;
+use Moose;
+use namespace::sweep;
 
 # DATE
 # VERSION
 
-use 5.010;
-use strict;
-use warnings;
-use Carp;
+with (
+    'Ledger::Role::HaveReadableElementsList',
+    'Ledger::Role::HaveJournalElements' => {
+	-alias => {
+	    _validateElements => 'validate',
+	    as_string => '_as_string',
+	},
+    },
+    );
 
-sub new {
-    my ($class, %attrs) = @_;
+has '+elements' => (
+    isa      => 'ArrayRef[Ledger::Journal::Element]',
+    );
 
-    if (!$attrs{_parsed}) {
-        $attrs{_parsed} = [];
-    }
-    if (!$attrs{_parser}) {
-        require Ledger::Parser;
-        $attrs{_parser} = Ledger::Parser->new;
-    }
+has 'config' => (
+    is         => 'rw',
+    does       => 'Ledger::Role::Config',
+    required   => 1,
+    );
 
-    bless \%attrs, $class;
-}
-
-sub empty {
+sub _doElementKindsRegistration {
     my $self = shift;
-    #$self->_discard_cache;
-    $self->{_parsed} = [];
+    #print "registering\n";
+    $self->_registerElementKind(
+	'Ledger::Journal::Note',
+	'Ledger::Journal::Blank',
+	'Ledger::Transaction');
+};
+
+sub _readEnded {
+    return 0;
 }
 
 sub as_string {
     my $self = shift;
-    $self->{_parser}->_parsed_as_string($self->{_parsed});
+    $self->validate;
+    return $self->_as_string;
 }
 
-use overload '""' => \&as_string;
+sub journal {
+    my $self = shift;
+    return $self;
+}
 
 1;
 # ABSTRACT: Represent Ledger journal
