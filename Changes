@@ -7,9 +7,9 @@ Revision history for Ledger-Parser
         - Use Math::BigFloat for amount arithmetics to avoid floating point
           round-off error.
 
-	- as_string() was not implemented, derp.
+        - as_string() was not implemented, derp.
 
-	- Fix handling of file with no newline at EOF.
+        - Fix handling of file with no newline at EOF.
 
 
 0.04    2015-03-26 (PERLANCAR)
