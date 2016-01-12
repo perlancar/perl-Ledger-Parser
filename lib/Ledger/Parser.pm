@@ -488,8 +488,11 @@ See L<Ledger::Journal> for available methods for the journal object.
 
 =head1 DESCRIPTION
 
-This module parses Ledger journal into L<Ledger::Journal> object. See
-http://ledger-cli.org/ for more on Ledger, the command-line double-entry
+B<EARLY RELEASE, SOME THINGS ARE NOT IMPLEMENTED YET.>
+
+This module parses Ledger journal into L<Ledger::Journal> object.
+
+See http://ledger-cli.org/ for more on Ledger, the command-line double-entry
 accounting system software.
 
 Ledger 3 can be extended with Python, and this module only supports a subset of
@@ -498,7 +501,7 @@ However, this module can also modify/write the journal, so it can be used e.g.
 to insert transactions programmatically (which is my use case and the reason I
 first created this module).
 
-This is an inexhaustive list of things that are not currently supported:
+This is an inexhaustive list of things that are not supported:
 
 =over
 
@@ -547,10 +550,14 @@ Only used when encountering a date without year.
 
 =head2 new(%attrs) => obj
 
-Create a new parser instance.
+Create a new parser instance. Return parser object.
 
 =head2 $ledgerp->read_file($filename) => obj
 
+Parse a journal file. Return L<Ledger::Journal> document object.
+
 =head2 $ledgerp->read_string($str) => obj
+
+Parse a journal string. Return L<Ledger::Journal> document object.
 
 =cut

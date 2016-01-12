@@ -58,7 +58,6 @@ Dump journal into Ledger string:
  print $journal;
 
 
-
 =head1 ATTRIBUTES
 
 
