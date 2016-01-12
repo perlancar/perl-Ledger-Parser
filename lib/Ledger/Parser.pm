@@ -9,6 +9,7 @@ use utf8;
 use warnings;
 use Carp;
 
+use Math::BigFloat;
 use Time::Moment;
 
 use constant +{
@@ -24,12 +25,12 @@ use constant +{
     COL_T_CODE    => 6,
     COL_T_WS3     => 7,
     COL_T_DESC    => 8,
-    COL_T_WS4     => 7,
-    COL_T_COMMENT => 8,
-    COL_T_NL      => 9,
-    COL_T_PARSE_DATE  => 10,
-    COL_T_PARSE_EDATE => 11,
-    COL_T_PARSE_TX    => 12,
+    COL_T_WS4     => 9,
+    COL_T_COMMENT => 10,
+    COL_T_NL      => 11,
+    COL_T_PARSE_DATE  => 12,
+    COL_T_PARSE_EDATE => 13,
+    COL_T_PARSE_TX    => 14,
 
     COL_P_WS1     => 1,
     COL_P_OPAREN  => 2,
@@ -122,7 +123,7 @@ sub _parse_amount {
     $num =~ s/,//g;
     $num *= -1 if $minsign;
     return [200, "OK", [
-        $num, # raw number
+        Math::BigFloat->new($num), # number
         ($commodity1 || $commodity2) // '', # commodity
         $commodity1 ? "B$ws1" : "A$ws2", # format: B(efore)|A(fter) + spaces
     ]];
@@ -315,14 +316,14 @@ sub _read_string {
         if ($line =~ /^\d/) {
             $line =~ m<^($re_date)                     # 1) actual date
                        (?: = ($re_date))?              # 2) effective date
-                       (?: (\s+) ([!*]) )?             # 3) ws 4) state
-                       (?: (\s+) \(([^\)]+)\) )?       # 5) ws 6) code
-                       (\s+) (\S.*?)                   # 7) ws 8) desc
-                       (?: (\s{2,}) ;(\S.+?) )?        # 9) ws 10) comment
+                       (?: (\s+) ([!*]) )?             # 3) ws1 4) state
+                       (?: (\s+) \(([^\)]+)\) )?       # 5) ws2 6) code
+                       (\s+) (\S.*?)                   # 7) ws3 8) desc
+                       (?: (\s{2,}) ;(\S.+?) )?        # 9) ws4 10) comment
                        (\R?)\z                         # 11) nl
                       >x
                           or $self->_err("Invalid transaction line syntax");
-            my $parsed_line = ['T', $1, $2, $3, $4, $5, $6, $7, $8, $9];
+            my $parsed_line = ['T', $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11];
 
             my $parse_date = $self->_parse_date($1);
             if ($parse_date->[0] != 200) {
@@ -362,7 +363,7 @@ sub _read_string {
                        ($re_account)                # 3) account
                        (\]|\))?                     # 4) cparen
                        (?: (\s{2,})($re_amount) )?  # 5) ws2 6) amount
-                       (?: (\s*) ;(.*?))?           # 7) ws 8) note
+                       (?: (\s*) ;(.*?))?           # 7) ws3 8) comment
                        (\R?)\z                      # 9) nl
                       !x
                           or $self->_err("Invalid posting line syntax");
@@ -390,12 +391,6 @@ sub _read_string {
 
     }
 
-    # make sure we always end with newline
-    if (@$res) {
-        $res->[-1][-1] .= "\n"
-            unless $res->[-1][-1] =~ /\R\z/;
-    }
-
     if ($in_tx) {
         my $parse_tx = $self->_parse_tx($res, $in_tx);
         if ($parse_tx->[0] != 200) {
@@ -406,6 +401,56 @@ sub _read_string {
 
     require Ledger::Journal;
     Ledger::Journal->new(_parser=>$self, _parsed=>$res);
+}
+
+sub _parsed_as_string {
+    no warnings 'uninitialized';
+
+    my ($self, $parsed) = @_;
+
+    my @res;
+    my $linum = 0;
+    for my $line (@$parsed) {
+        $linum++;
+        my $type = $line->[COL_TYPE];
+        if ($type eq 'B') {
+            push @res, $line->[COL_B_RAW];
+        } elsif ($type eq 'T') {
+            push @res, join(
+                "",
+                $line->[COL_T_DATE],
+                (length($line->[COL_T_EDATE]) ? "=".$line->[COL_T_EDATE] : ""),
+                $line->[COL_T_WS1], $line->[COL_T_STATE],
+                (length($line->[COL_T_CODE]) ? $line->[COL_T_WS2]."(".$line->[COL_T_CODE].")" : ""),
+                $line->[COL_T_WS3], $line->[COL_T_DESC],
+                (length($line->[COL_T_COMMENT]) ? $line->[COL_T_WS4]."(".$line->[COL_T_COMMENT].")" : ""),
+                $line->[COL_T_NL],
+            );
+        } elsif ($type eq 'C') {
+            push @res, join("", @{$line}[COL_C_CHAR .. COL_C_NL]);
+        } elsif ($type eq 'TC') {
+            push @res, join(
+                "",
+                $line->[COL_TC_WS1], ";",
+                $line->[COL_TC_COMMENT],
+                $line->[COL_TC_NL],
+            );
+        } elsif ($type eq 'P') {
+            push @res, join(
+                "",
+                $line->[COL_P_WS1],
+                $line->[COL_P_OPAREN],
+                $line->[COL_P_ACCOUNT],
+                $line->[COL_P_CPAREN],
+                (length($line->[COL_P_AMOUNT]) ? $line->[COL_P_WS2].$line->[COL_P_AMOUNT] : ""),
+                (length($line->[COL_P_COMMENT]) ? $line->[COL_P_WS3].";".$line->[COL_P_COMMENT] : ""),
+                $line->[COL_P_NL],
+            );
+        } else {
+            die "Bad parsed data (line #$linum): unknown type '$type'";
+        }
+    }
+    join("", @res);
 }
 
 1;

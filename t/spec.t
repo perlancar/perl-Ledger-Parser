@@ -7,7 +7,7 @@ use warnings;
 use File::ShareDir::Tarball qw(dist_dir);
 use File::Slurper 'read_text';
 use Ledger::Parser;
-#use Test::Differences;
+use Test::Differences;
 use Test::Exception;
 use Test::More 0.98;
 
@@ -25,11 +25,11 @@ for my $file (@files) {
         if ($file =~ /invalid-/) {
             dies_ok { $parser->read_file($file) } "dies";
         } else {
-            #my $orig_content = read_text($file);
+            my $orig_content = read_text($file);
             my $journal;
             lives_ok { $journal = $parser->read_file($file) } "lives"
                 or return;
-            #eq_or_diff $journal->as_string, $orig_content, "round-trip";
+            eq_or_diff $journal->as_string, $orig_content, "round-trip";
         };
     }
 }
