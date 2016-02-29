@@ -6,7 +6,6 @@ package Ledger::Journal;
 use 5.010;
 use strict;
 use warnings;
-use Carp;
 
 sub new {
     my ($class, %attrs) = @_;

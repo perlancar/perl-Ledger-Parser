@@ -7,7 +7,6 @@ use 5.010001;
 use strict;
 use utf8;
 use warnings;
-use Carp;
 
 use Math::BigFloat;
 use Time::Moment;
