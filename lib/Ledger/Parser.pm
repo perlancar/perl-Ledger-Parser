@@ -501,7 +501,7 @@ However, this module can also modify/write the journal, so it can be used e.g.
 to insert transactions programmatically (which is my use case and the reason I
 first created this module).
 
-This is an inexhaustive list of things that are not supported:
+This is an inexhaustive list of things that are not yet supported:
 
 =over
 
@@ -519,7 +519,7 @@ For example, things like:
 
 =item * Expression
 
-=item * Various commands
+=item * Various command directives
 
 Including but not limited to: assert, C (currency conversion), ...
 
