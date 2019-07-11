@@ -1,11 +1,11 @@
-0.06    2017-06-16 (PERLANCAR)
+0.06    2017-06-16  Released-By: PERLANCAR
 
         - No functional changes.
 
         - Bump prereq version: Ledger::Examples to 0.05 [RT#122107].
 
 
-0.05    2016-01-12 (PERLANCAR)
+0.05    2016-01-12  Released-By: PERLANCAR
 
         [Bug fixes]
 
@@ -17,7 +17,7 @@
         - Fix handling of file with no newline at EOF.
 
 
-0.04    2015-03-26 (PERLANCAR)
+0.04    2015-03-26  Released-By: PERLANCAR
 
         [INCOMPATIBLE CHANGES]
 
@@ -31,18 +31,18 @@
           tuned.
 
 
-0.03    2011-11-01 (SHARYANTO)
+0.03    2011-11-01  Released-By: SHARYANTO
 
         - No functional changes. Add missing dep to DateTime [ct].
 
 
-0.02    2011-10-31 (SHARYANTO)
+0.02    2011-10-31  Released-By: SHARYANTO
 
         - Refactorings and fixes. Add is_balanced() to transaction. Add sample
           file and tests, flesh out L::Pricing. Add missing dependency to Moo
           [ct].
 
 
-0.01    2011-09-09 (SHARYANTO)
+0.01    2011-09-09  Released-By: SHARYANTO
 
         - First release.
